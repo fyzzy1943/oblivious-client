@@ -1,0 +1,13 @@
+; /*=====================*\
+; |        配置文件        |
+; \*=====================*/
+
+[main]
+base_url=
+
+[黑龙江-媒体声音]
+serial=
+local_path=
+folder_prefix=
+title_folder=
+update_number=
