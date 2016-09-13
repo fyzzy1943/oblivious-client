@@ -1,6 +1,7 @@
 from helper import conf
 from urllib import request
-import json, os, re
+from PIL import Image
+import json, os, shutil, re
 
 base_url = conf.main('base_url')
 base_img_url = conf.main('base_img_url')
@@ -22,19 +23,32 @@ for section in conf.all():
             # 当前操作路径
             current_path = os.path.join(local_path, folder_prefix+str(index+1))
             current_img_path = os.path.join(current_path, 'img', 'pic')
+            title_path = os.path.join(local_path, title_folder)
             # 删除所有图片
             for file in [x for x in os.listdir(current_img_path) if x != 'line.jpg']:
                 os.remove(os.path.join(current_img_path, file))
 
             ar = articles[index]
 
-            text = ar['article']
             # 下载并处理图片
             for image in re_img.finditer(ar['article']):
                 url = base_img_url+image.group(1)
                 with request.urlopen(url) as img:
-                    with open(os.path.join(os.path.curdir, 'temp', image.group(1)), 'wb') as tmp:
+                    img_path = os.path.join(os.path.curdir, 'temp', image.group(1))
+                    with open(img_path, 'wb') as tmp:
                         tmp.write(img.read())
+                    with Image.open(img_path) as tmp:
+                        tmp.thumbnail((700, tmp.size[1]))
+                        w, h = tmp.size
+                        tmp.save(img_path+'.jpg')
+                    os.remove(img_path)
+                    shutil.move(img_path+'.jpg', os.path.join(current_img_path, image.group(1)+'.jpg'))
+                img_code = '\n<img src="img/pic/'+image.group(1)+'.jpg" hspace="'+str((760-w)//2)+'">'
+                for _ in range(h//22):
+                    img_code = img_code+'<br />'
+                img_code = img_code + '\n'
+
+                ar['article'] = ar['article'].replace(image.group(0), img_code)
 
                 print(image.group(0))
                 print(image.group(1))
@@ -57,4 +71,8 @@ for section in conf.all():
                 file.write(article)
             # print(article)
 
+            # 生成标题
+            for file in os.listdir(title_path):
+                os.remove(os.path.join(title_path, file))
+            title = Image.new('RGB', (750, 50))
 os.system('pause')
