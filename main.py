@@ -1,10 +1,11 @@
 from helper import conf
-from urllib import request
+from urllib import request, parse
 from PIL import Image
 import json, os, shutil, re
 
 base_url = conf.main('base_url')
 base_img_url = conf.main('base_img_url')
+base_title_url = conf.main('base_title_url')
 re_img = re.compile(r'\{IMG:(\S+)}')
 
 for section in conf.all():
@@ -19,11 +20,16 @@ for section in conf.all():
         # print('Status:', f.status, f.reason)
         # print('Data:', data.decode('utf-8'))
         articles = json.loads(data.decode('utf-8'), encoding='utf-8')
+        # 清空标题目录
+        for file in os.listdir(os.path.join(local_path, title_folder)):
+            os.remove(os.path.join(os.path.join(local_path, title_folder), file))
+
         for index in range(int(update_number)):
             # 当前操作路径
             current_path = os.path.join(local_path, folder_prefix+str(index+1))
             current_img_path = os.path.join(current_path, 'img', 'pic')
-            title_path = os.path.join(local_path, title_folder)
+            current_title_path = os.path.join(local_path, title_folder)
+
             # 删除所有图片
             for file in [x for x in os.listdir(current_img_path) if x != 'line.jpg']:
                 os.remove(os.path.join(current_img_path, file))
@@ -66,13 +72,16 @@ for section in conf.all():
             L.append(r'</Mypage>')
             article = '\n'.join(L)
 
-            path = os.path.join(current_path, 'pages.xml')
-            with open(path, 'w', encoding='utf-8') as file:
+            # 生成xml文件
+            with open(os.path.join(current_path, 'pages.xml'), 'w', encoding='utf-8') as file:
                 file.write(article)
-            # print(article)
 
             # 生成标题
-            for file in os.listdir(title_path):
-                os.remove(os.path.join(title_path, file))
-            title = Image.new('RGB', (750, 50))
+            with request.urlopen(base_title_url+parse.quote(ar['title'])+'/false') as title_img:
+                with open(os.path.join(current_title_path, '%02d'% (index+1)+'.png'), 'wb') as title_file:
+                    title_file.write(title_img.read())
+            with request.urlopen(base_title_url + parse.quote(ar['title']) + '/true') as title_img:
+                with open(os.path.join(current_title_path, 'd_%02d' % (index + 1) + '.png'), 'wb') as title_file:
+                    title_file.write(title_img.read())
+
 os.system('pause')
