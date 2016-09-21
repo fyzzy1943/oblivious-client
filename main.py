@@ -8,6 +8,8 @@ base_img_url = conf.main('base_img_url')
 base_title_url = conf.main('base_title_url')
 re_img = re.compile(r'\{IMG:(\S+)}')
 
+print(conf.all())
+
 for section in conf.all():
     serial = conf.get(section, 'serial')
     local_path = conf.get(section, 'local_path')
@@ -20,9 +22,14 @@ for section in conf.all():
         # print('Status:', f.status, f.reason)
         # print('Data:', data.decode('utf-8'))
         articles = json.loads(data.decode('utf-8'), encoding='utf-8')
+
+        print('文章获取成功开始更新')
+
         # 清空标题目录
         for file in os.listdir(os.path.join(local_path, title_folder)):
             os.remove(os.path.join(os.path.join(local_path, title_folder), file))
+
+        print('标题目录已清空')
 
         for index in range(int(update_number)):
             # 当前操作路径
@@ -84,4 +91,7 @@ for section in conf.all():
                 with open(os.path.join(current_title_path, 'd_%02d' % (index + 1) + '.png'), 'wb') as title_file:
                     title_file.write(title_img.read())
 
+            print('【'+ar['title']+'】更新完成')
+
+print('全部更新完成')
 os.system('pause')
