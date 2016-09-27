@@ -6,7 +6,7 @@ import json, os, shutil, re
 base_url = conf.main('base_url')
 base_img_url = conf.main('base_img_url')
 base_title_url = conf.main('base_title_url')
-re_img = re.compile(r'\{IMG:(\S+)}')
+re_img = re.compile(r'<img src="(\S+)">')
 
 print(conf.all())
 
@@ -64,9 +64,9 @@ for section in conf.all():
                 ar['article'] = ar['article'].replace(image.group(0), img_code)
 
                 print(image.group(0))
-                print(image.group(1))
+                # print(image.group(1))
 
-            ar['article'] = ar['article'].replace('\\r\\n', '\n')
+            # ar['article'] = ar['article'].replace('\\r\\n', '\n')
 
             L =[]
             L.append(r'<?xml version="1.0" encoding="utf-8"?>')
