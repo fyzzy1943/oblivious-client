@@ -45,25 +45,28 @@ for section in conf.all():
 
             # 下载并处理图片
             for image in re_img.finditer(ar['article']):
-                url = base_img_url+image.group(1)
-                with request.urlopen(url) as img:
-                    img_path = os.path.join(os.path.curdir, 'temp', image.group(1))
-                    with open(img_path, 'wb') as tmp:
-                        tmp.write(img.read())
-                    with Image.open(img_path) as tmp:
-                        tmp.thumbnail((700, tmp.size[1]))
-                        w, h = tmp.size
-                        tmp.save(img_path+'.jpg')
-                    os.remove(img_path)
-                    shutil.move(img_path+'.jpg', os.path.join(current_img_path, image.group(1)+'.jpg'))
-                img_code = '\n<img src="img/pic/'+image.group(1)+'.jpg" hspace="'+str((760-w)//2)+'">'
-                for _ in range(h//22):
-                    img_code = img_code+'<br />'
-                img_code = img_code + '\n'
+                try:
+                    url = base_img_url+image.group(1)
+                    with request.urlopen(url) as img:
+                        img_path = os.path.join(os.path.curdir, 'temp', image.group(1))
+                        with open(img_path, 'wb') as tmp:
+                            tmp.write(img.read())
+                        with Image.open(img_path) as tmp:
+                            tmp.thumbnail((700, tmp.size[1]))
+                            w, h = tmp.size
+                            tmp.save(img_path+'.jpg')
+                        os.remove(img_path)
+                        shutil.move(img_path+'.jpg', os.path.join(current_img_path, image.group(1)+'.jpg'))
+                    img_code = '\n<img src="img/pic/'+image.group(1)+'.jpg" hspace="'+str((760-w)//2)+'">'
+                    for _ in range(h//22):
+                        img_code = img_code+'<br />'
+                    img_code = img_code + '\n'
 
-                ar['article'] = ar['article'].replace(image.group(0), img_code)
+                    ar['article'] = ar['article'].replace(image.group(0), img_code)
+                    print(image.group(0))
+                except Exception as e:
+                    print('图片下载失败')
 
-                print(image.group(0))
                 # print(image.group(1))
 
             # ar['article'] = ar['article'].replace('\\r\\n', '\n')
