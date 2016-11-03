@@ -1,7 +1,7 @@
 from helper import conf
 from urllib import request, parse
 from PIL import Image
-import json, os, shutil, re
+import json, os, shutil, re, base64
 
 base_url = conf.main('base_url')
 base_img_url = conf.main('base_img_url')
@@ -16,6 +16,8 @@ for section in conf.all():
     folder_prefix = conf.get(section, 'folder_prefix')
     title_folder = conf.get(section, 'title_folder')
     update_number = conf.get(section, 'update_number')
+
+    print('开始更新:'+serial)
 
     with request.urlopen(base_url+serial+'/'+update_number) as f:
         data = f.read()
@@ -87,10 +89,13 @@ for section in conf.all():
                 file.write(article)
 
             # 生成标题
-            with request.urlopen(base_title_url+parse.quote(ar['title'])+'/false') as title_img:
+            base64_title = base64.urlsafe_b64encode(ar['title'].encode('utf-8')).decode('utf-8')
+            # print(base64_title.decode('utf-8'))
+            # print(base_title_url+base64_title+'/false')
+            with request.urlopen(base_title_url+base64_title+'/false') as title_img:
                 with open(os.path.join(current_title_path, '%02d'% (index+1)+'.png'), 'wb') as title_file:
                     title_file.write(title_img.read())
-            with request.urlopen(base_title_url + parse.quote(ar['title']) + '/true') as title_img:
+            with request.urlopen(base_title_url + base64_title + '/true') as title_img:
                 with open(os.path.join(current_title_path, 'd_%02d' % (index + 1) + '.png'), 'wb') as title_file:
                     title_file.write(title_img.read())
 
