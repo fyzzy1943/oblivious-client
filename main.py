@@ -8,30 +8,29 @@ base_img_url = conf.main('base_img_url')
 base_title_url = conf.main('base_title_url')
 re_img = re.compile(r'<img src="(\S+)">')
 
-print(conf.all())
+# print(conf.all())
 
 for section in conf.all():
+    print(section)
     serial = conf.get(section, 'serial')
     local_path = conf.get(section, 'local_path')
     folder_prefix = conf.get(section, 'folder_prefix')
     title_folder = conf.get(section, 'title_folder')
     update_number = conf.get(section, 'update_number')
 
-    print('开始更新:'+serial)
+    print('**【 开始更新：' + section + '，序列号：' + serial + ' 】**\n')
 
     with request.urlopen(base_url+serial+'/'+update_number) as f:
         data = f.read()
         # print('Status:', f.status, f.reason)
         # print('Data:', data.decode('utf-8'))
         articles = json.loads(data.decode('utf-8'), encoding='utf-8')
-
-        print('文章获取成功开始更新')
+        # print('文章列表获取成功')
 
         # 清空标题目录
         for file in os.listdir(os.path.join(local_path, title_folder)):
             os.remove(os.path.join(os.path.join(local_path, title_folder), file))
-
-        print('标题目录已清空')
+        # print('标题目录已清空')
 
         for index in range(int(update_number)):
             # 当前操作路径
@@ -44,11 +43,13 @@ for section in conf.all():
                 os.remove(os.path.join(current_img_path, file))
 
             ar = articles[index]
+            print('++开始更新： ' + ar['title'])
 
             # 下载并处理图片
             for image in re_img.finditer(ar['article']):
                 try:
                     url = base_img_url+image.group(1)
+                    # print(url)
                     with request.urlopen(url) as img:
                         img_path = os.path.join(os.path.curdir, 'temp', image.group(1))
                         with open(img_path, 'wb') as tmp:
@@ -57,7 +58,7 @@ for section in conf.all():
                             tmp.thumbnail((700, tmp.size[1]))
                             w, h = tmp.size
                             tmp.save(img_path+'.jpg')
-                        os.remove(img_path)
+                        # os.remove(img_path)
                         shutil.move(img_path+'.jpg', os.path.join(current_img_path, image.group(1)+'.jpg'))
                     img_code = '\n<img src="img/pic/'+image.group(1)+'.jpg" hspace="'+str((760-w)//2)+'">'
                     for _ in range(h//22):
@@ -65,7 +66,7 @@ for section in conf.all():
                     img_code = img_code + '\n'
 
                     ar['article'] = ar['article'].replace(image.group(0), img_code)
-                    print(image.group(0))
+                    print('图片：' + image.group(1) + ' 已处理完成')
                 except Exception as e:
                     print('图片下载失败')
 
@@ -99,7 +100,13 @@ for section in conf.all():
                 with open(os.path.join(current_title_path, 'd_%02d' % (index + 1) + '.png'), 'wb') as title_file:
                     title_file.write(title_img.read())
 
-            print('【'+ar['title']+'】更新完成')
+            # print('--更新完成： '+ar['title'] + '\n')
+            print()
+
+# 清空缓存目录
+for file in os.listdir(os.path.join(os.path.curdir, 'temp')):
+    os.remove(os.path.join(os.path.curdir, 'temp', file))
+print('缓存已清空')
 
 print('全部更新完成')
 os.system('pause')
