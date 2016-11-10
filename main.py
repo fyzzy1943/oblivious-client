@@ -9,6 +9,8 @@ base_title_url = conf.main('base_title_url')
 re_img = re.compile(r'<img src="(\S+)">')
 
 # print(conf.all())
+if not os.path.exists(os.path.join(os.path.curdir, 'temp')):
+    os.makedirs(os.path.join(os.path.curdir, 'temp'))
 
 for section in conf.all():
     print(section)
