@@ -1,3 +1,5 @@
+#encoding='utf-8'
+
 from helper import conf
 from urllib import request, parse
 from PIL import Image
@@ -26,7 +28,7 @@ for section in conf.all():
         data = f.read()
         # print('Status:', f.status, f.reason)
         # print('Data:', data.decode('utf-8'))
-        articles = json.loads(data.decode('utf-8'), encoding='utf-8')
+        articles = json.loads(data.decode('utf-8', 'ignore'), encoding='utf-8')
         # print('文章列表获取成功')
 
         # 清空标题目录
@@ -45,7 +47,8 @@ for section in conf.all():
                 os.remove(os.path.join(current_img_path, file))
 
             ar = articles[index]
-            print('++开始更新： ' + ar['title'])
+            temp = ar['title']
+            print('++开始更新： ' + temp.replace(u'\xa0', u' '))
 
             # 下载并处理图片
             for image in re_img.finditer(ar['article']):
