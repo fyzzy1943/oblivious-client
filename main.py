@@ -96,8 +96,7 @@ for section in conf.all():
                 file.write(article)
 
             # 生成标题
-            for br in re_br.finditer(ar['title']):
-                ar['title'].replace(br.group(0), '\n')
+            ar['title'] = re_br.sub(' ', ar['title'])
             base64_title = base64.urlsafe_b64encode(ar['title'].encode('utf-8')).decode('utf-8')
             # print(base64_title.decode('utf-8'))
             # print(base_title_url+base64_title+'/false')
