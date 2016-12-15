@@ -9,6 +9,7 @@ base_url = conf.main('base_url')
 base_img_url = conf.main('base_img_url')
 base_title_url = conf.main('base_title_url')
 re_img = re.compile(r'<img src="(\S+)">')
+re_br = re.compile(r'<br\s*>|<br\s*/\s*>', re.I)
 
 # print(conf.all())
 if not os.path.exists(os.path.join(os.path.curdir, 'temp')):
@@ -95,6 +96,8 @@ for section in conf.all():
                 file.write(article)
 
             # 生成标题
+            for br in re_br.finditer(ar['title']):
+                ar['title'].replace(br.group(0), '\n')
             base64_title = base64.urlsafe_b64encode(ar['title'].encode('utf-8')).decode('utf-8')
             # print(base64_title.decode('utf-8'))
             # print(base_title_url+base64_title+'/false')
